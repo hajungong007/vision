@@ -1,0 +1,31 @@
+# Compile the ecto
+find_package(PCL 1.5 REQUIRED)
+find_package(HDF5 REQUIRED)
+find_package(FLANN REQUIRED)
+
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS}
+                           ${OpenCV_INCLUDE_DIRS}
+                           ${PCL_INCLUDE_DIRS}
+			               ${FLANN_INCLUDE_DIRS}
+                           ${HDF5_INCLUDE_DIR}
+                       #/usr/local/hdf5/include                           
+)
+
+
+ectomodule(ecto_msd_pcl DESTINATION ${PROJECT_NAME}/ecto_cells
+                        INSTALL
+           detector.cpp
+           #detector_experimental.cpp
+           trainer.cpp
+           trainer_experimental.cpp
+           module.cpp
+)
+
+link_ecto(ecto_msd_pcl ${catkin_LIBRARIES}
+${OpenCV_LIBRARIES}
+${PCL_LIBRARIES} 
+${Boost_LIBRARIES} 
+${FLANN_LIBRARIES} 
+${HDF5_hdf5_LIBRARY}
+)
+

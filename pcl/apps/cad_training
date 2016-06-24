@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+import ecto
+from object_recognition_msd_pcl.ecto_cells.ecto_msd_pcl_exp import CAD_trainer
+from object_recognition_core.ecto_cells.db import ModelWriter
+from object_recognition_core.db import Documents, ObjectDb, tools as dbtools, models
+import argparse
+import sys
+import textwrap
+def parse_args():
+	
+    parser = argparse.ArgumentParser(description='1111')
+    parser.add_argument('-i', '--input', dest='path', type=str, help='Path to mesh', required = True)
+    parser.add_argument('--id', dest='id', type=str, help='Object_id', required = True)
+#    parser.add_argument('--commit', dest='commit', type=bool, help='commit', required = True)
+    dbtools.add_db_arguments(parser)
+    args = parser.parse_args()
+    return args
+    
+    
+if "__main__" == __name__:
+
+    _argv = sys.argv[:]
+    args = parse_args()
+
+    commit_ = False
+    if args.commit:
+        commit_ = True
+
+    _json_db = '{"type": "CouchDB", "root": "http://localhost:5984", "collection": "object_recognition"}'
+#    object_id = '1eee4d3051737509fef56ddd7c0008a4' #domik_v_derevne
+#    object_id = 'a24e8c592506efe9eaa2beada9000474' #cylinder
+    object_id = args.id
+    if commit_:
+        print 'Commit True' 
+    else:
+        print 'Commit False'  
+
+    trainer_ = CAD_trainer(json_db_in = _json_db, object_id_in = object_id, model_path = args.path, commit = commit_ )
+       
+
+    model_writer = ecto.If('delta R|T', cell=ModelWriter(method = 'msd_pcl', json_params = ''))
+    model_writer.inputs.__test__ = True   
+      
+    graph = [trainer_['json_db']  >> model_writer['json_db'],
+	      trainer_['db_document'] >> model_writer['db_document'],
+	      trainer_['object_id']  >> model_writer['object_id'],
+	      trainer_['commit'] >> model_writer['__test__']
+	      ]
+	          
+    plasm = ecto.Plasm()
+    plasm.connect(graph)
+
+    sched = ecto.Scheduler(plasm)
+    # execute the plasm
+    sched.execute(niter=1)
+

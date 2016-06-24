@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+"""
+Main script for doing object capture
+"""
+
+from ecto_image_pipeline.io.source import add_camera_group
+from object_recognition_msd_pcl import scanner_plasm_experimental
+from ecto.opts import scheduler_options, cell_options
+import ecto
+import argparse
+import math
+import sys
+import textwrap
+
+def parse_args():
+	
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=textwrap.dedent('''VFH object scanner'''), fromfile_prefix_chars='@')
+#    parser.add_argument('-i', '--object_id', dest='object_id', default='', help='Object id')
+    parser.add_argument('--id', dest='object_id', type=str, required = True, help='Object id')
+    parser.add_argument('-o', '--output', metavar='BAG_FILE', dest='bag', type=str,
+                       default='test.bag',
+                       help='A bagfile to write to.')
+    parser.add_argument('-a', '--angle_thresh', metavar='RADIANS', dest='angle_thresh', type=float,
+                       default= 10 * math.pi / 180, #10 degrees
+                       help='The delta angular threshold in pose.'
+                            'Frames will not be recorded unless they are not closer to any other pose by this amount. default(%(default)s)')
+    parser.add_argument('-n', '--nviews', metavar='NVIEWS', dest='nviews', type=int,
+                       default=60,
+                       help='Number of desired views. default(%(default)s)')
+    parser.add_argument('-p', '--preview', dest='preview', action='store_true',
+                        default=False, help='Preview the pose estimator.')
+    parser.add_argument('-i', '--input', dest='input', type=str, help='Type of a sensor', required = True)
+    parser.add_argument('-m', '--matches', dest='matches', action='store_true',
+                        default=False, help='Visualize the matches.')
+
+    add_camera_group(parser)
+
+    from ecto_opencv.rgbd import OnPlaneClustererCylinder
+    segmentation_factory = cell_options(parser, OnPlaneClustererCylinder, 'seg')
+    
+    group = parser.add_argument_group('Scheduler Options')
+    scheduler_options(group)
+    args = parser.parse_args()
+    if not args.preview and len(args.bag) < 1:
+        parser.print_help()
+        print '\nYou must supply a bag name, or run in --preview mode'
+        sys.exit(1)
+    args.segmentation_factory = segmentation_factory
+    return args
+    
+    
+if "__main__" == __name__:
+
+    _argv = sys.argv[:]
+    options = parse_args()
+    
+    segmentation = options.segmentation_factory(options)
+
+    (plasm, segmentation) = scanner_plasm_experimental.create_capture_plasm(object_id=options.object_id,
+                                            angle_thresh=options.angle_thresh,
+                                            segmentation_cell=segmentation,
+                                            n_desired=options.nviews,
+                                            preview=options.preview,
+                                            sensor=options.input,
+                                            orb_matches=options.matches,
+                                            use_turn_table=False,
+                                            res=options.res,
+                                            fps=options.fps
+                                            )
+    
+    
+    from ecto.opts import run_plasm
+    run_plasm(options, plasm, locals=dict(plasm=plasm, segmentation=segmentation))
+    print "Done!"
+
+    

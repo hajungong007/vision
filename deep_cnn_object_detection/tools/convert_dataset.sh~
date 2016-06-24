@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+DATA=/home/msdu/catkin_ws/src/vision/deep_cnn_object_detection/data
+TOOLS=/home/msdu/learning/caffe-master/build/tools
+EXAMPLE=/home/msdu/catkin_ws/src/vision/deep_cnn_object_detection/data
+
+#TRAIN_DATA_ROOT=/home/msdu/catkin_ws/src/vision/deep_cnn_object_detection/data/images
+TRAIN_DATA_ROOT=/
+
+# Set RESIZE=true to resize the images to 256x256. Leave as false if images have
+# already been resized using another tool.
+RESIZE=true
+if $RESIZE; then
+  RESIZE_HEIGHT=256
+  RESIZE_WIDTH=256
+else
+  RESIZE_HEIGHT=0
+  RESIZE_WIDTH=0
+fi
+
+echo "Creating train lmdb..."
+
+GLOG_logtostderr=1 $TOOLS/convert_imageset --resize_height=$RESIZE_HEIGHT --resize_width=$RESIZE_WIDTH \
+    --shuffle $TRAIN_DATA_ROOT $DATA/images/train_list.txt $EXAMPLE/dataset_train_lmdb
+
+echo "Creating test lmdb..."
+
+GLOG_logtostderr=1 $TOOLS/convert_imageset --resize_height=$RESIZE_HEIGHT --resize_width=$RESIZE_WIDTH \
+    --shuffle $TRAIN_DATA_ROOT $DATA/images/train_list.txt $EXAMPLE/dataset_train_lmdb

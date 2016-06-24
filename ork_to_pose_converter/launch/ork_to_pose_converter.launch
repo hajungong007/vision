@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <node  name="ork_to_pose_converter"  pkg="ork_to_pose_converter" type="ork_to_pose_converter_node" output="screen">
+    
+  </node>
+</launch>

@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+TOOLS=/home/msdu/learning/caffe-master/build/tools
+MODEL=/home/msdu/catkin_ws/src/vision/deep_cnn_object_detection/nets/googlenet/train_val.prototxt
+SOLVER=/home/msdu/catkin_ws/src/vision/deep_cnn_object_detection/nets/googlenet/solver.prototxt
+WEIGHTS=/home/msdu/catkin_ws/src/vision/deep_cnn_object_detection/nets/googlenet/weights.caffemodel
+
+echo "Training googlenet"
+
+GLOG_logtostderr=1 $TOOLS/caffe/train \
+    -gpu 0 \
+    -model $MODEL \
+    -solver $SOLVER \
+    -weights $WEIGHTS

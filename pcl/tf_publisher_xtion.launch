@@ -1,0 +1,5 @@
+<launch>
+
+    <node pkg="tf" type="static_transform_publisher" name="rgbd_sensor_tf" args="0 0 0 1.36 0 0 r/link_6 /camera_rgb_optical_frame 100" />
+
+</launch>

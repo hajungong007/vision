@@ -1,0 +1,8 @@
+<launch>
+
+    <include file="$(find freenect_launch)/launch/freenect.launch">
+      <arg name="publish_tf"                      value="false" />
+      <arg name="depth_registration"              value="true" />
+    </include>
+
+</launch>

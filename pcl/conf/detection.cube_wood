@@ -1,0 +1,15 @@
+sink1:
+  type: Publisher
+  module: 'object_recognition_ros.io'
+  inputs: [pipeline1]
+pipeline1:
+  type: MsdPclDetector
+  module: 'object_recognition_msd_pcl'
+  outputs: [sink1]
+  parameters:
+    object_ids: ['5d59e8632a4c3cdb15a56f1acc00011d'] 
+    sensor: 'kinect'
+    db:
+      type: 'CouchDB'
+      root: 'http://localhost:5984'
+      collection: 'object_recognition'

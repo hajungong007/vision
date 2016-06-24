@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import rospy, sys, math
+import PyKDL
+from tf_conversions import posemath
+from geometry_msgs.msg import Point, PoseStamped, Pose
+from object_recognition_msgs.msg import RecognizedObject, RecognizedObjectArray, ObjectType 
+
+
+class Pub:
+    
+    def __init__(self):
+            pub = rospy.Publisher('/recognized_object_array_', RecognizedObjectArray,  queue_size=1)
+            
+            while not rospy.is_shutdown():
+		print 'publish transform [y/n]:'
+		c = raw_input('')
+		if c == 'n': return
+
+		o = RecognizedObject()
+		o.header.frame_id = '/camera_rgb_optical_frame'
+		#o.header.frame_id = '/world'
+		o.type.key = 'e111342dc94db5fcf82bfcb49200563b'
+		o.type.db = '{"type": "CouchDB", "root": "http://localhost:5984", "collection": "object_recognition"}'
+		o.pose.header.frame_id = '/camera_rgb_optical_frame'
+		#o.pose.header.frame_id = '/world'
+		object_pos = [-0.07, 1.33, 0.80]                      
+		object_orn = [0.707, 
+			    0.0, 
+			    -0.242, 
+			    0.664]
+		pose = self.to_pose_stamped_msg(object_pos, object_orn, '/camera_rgb_optical_frame')
+		#pose = self.to_pose_stamped_msg(object_pos, object_orn, '/world')                   
+		o.pose.pose.pose = pose.pose        
+
+		a = RecognizedObjectArray()
+		a.header.stamp = rospy.Time.now()
+		a.header.frame_id = '/camera_rgb_optical_frame' 
+		#a.header.frame_id = '/world' 
+		a.objects = [o]   
+
+		pub.publish(a)   
+                
+    def to_pose_stamped_msg(self, p, o, frame_id):
+        pose = PoseStamped()
+        pose.header.frame_id = frame_id
+        pose.pose = posemath.toMsg(PyKDL.Frame(PyKDL.Rotation.Quaternion(o[0], o[1], o[2], o[3]), PyKDL.Vector(p[0], p[1], p[2])))
+        return pose
+
+if __name__ == "__main__":
+    rospy.init_node('fake_object_pub')      
+    Pub()
+ 
+    
